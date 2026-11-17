@@ -161,11 +161,17 @@ export function PlatformPage() {
   if (loading) return <main className="auth-shell"><div className="auth-loading">Chargement de la console plateforme…</div></main>;
 
   if (!user) return (
-    <main className="auth-shell platform-shell">
-      <div className="auth-layout auth-login-layout">
-      <section className="auth-card auth-login-card platform-auth-card">
-        <div className="auth-card-brand auth-login-brand"><img src="/ndev-logo-login.png" alt="NDEV Digital" /></div>
-        {needsBootstrap && <h1>Initialiser la plateforme</h1>}
+    <main className="auth-shell platform-shell platform-login-shell">
+      <section className="platform-login-card" aria-labelledby="platform-login-title">
+        <div className="platform-login-brand">
+          <img src="/scolapro-icon.svg" alt="" />
+          <strong>ScolaPro</strong>
+        </div>
+        <p className="platform-login-eyebrow">ADMINISTRATION DE LA PLATEFORME</p>
+        <h1 id="platform-login-title">{needsBootstrap ? 'Créer le compte administrateur' : 'Connexion'}</h1>
+        <p className="platform-login-description">
+          {needsBootstrap ? 'Initialisez votre espace d’administration sécurisé.' : 'Connectez-vous à la console d’administration.'}
+        </p>
         <form onSubmit={(event) => void handleSubmit(event)}>
           {needsBootstrap && <>
             <label className="field-label">Clé de configuration initiale<input required minLength={32} autoComplete="off" value={bootstrapKey} onChange={(event) => setBootstrapKey(event.target.value)} /></label>
@@ -174,11 +180,10 @@ export function PlatformPage() {
           <label className="field-label">Adresse courriel<input required type="email" maxLength={160} autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
           <label className="field-label">Mot de passe<input required type="password" minLength={needsBootstrap ? 12 : 1} maxLength={128} autoComplete={needsBootstrap ? 'new-password' : 'current-password'} value={password} onChange={(event) => setPassword(event.target.value)} />{needsBootstrap && <small className="field-hint">12 caractères minimum, avec majuscule, minuscule et chiffre.</small>}</label>
           {error && <div className="feedback-message error-message" role="alert">{error}</div>}
-          <button className="primary-button auth-submit" disabled={saving}>{saving ? 'Veuillez patienter…' : needsBootstrap ? 'Créer le compte plateforme' : 'Accéder à la console'}</button>
+          <button className="primary-button platform-login-submit" disabled={saving}>{saving ? 'Veuillez patienter…' : needsBootstrap ? 'Créer le compte plateforme' : 'Se connecter'}</button>
         </form>
         <a className="platform-back-link" href="/">Retour à la connexion des écoles</a>
       </section>
-      </div>
     </main>
   );
 
@@ -196,7 +201,8 @@ export function PlatformPage() {
     <main className="platform-dashboard">
       <aside className="platform-sidebar">
         <a className="platform-brand" href="#overview" aria-label="ScolaPro — accueil de l’administration">
-          <img src="/ndev-logo-login.png" alt="NDEV Digital — plateforme de gestion des écoles" />
+          <img src="/scolapro-icon.svg" alt="" />
+          <strong>ScolaPro</strong>
         </a>
         <div className="platform-sidebar-label">ESPACE ADMIN SCOLAPRO</div>
         <nav className="platform-nav" aria-label="Navigation de l’administration">

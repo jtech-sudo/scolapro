@@ -48,7 +48,7 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated: (session: AuthS
   }
 
   return (
-    <main className="auth-shell auth-login-shell">
+    <main className="auth-shell auth-login-shell school-login-shell">
       <div className="auth-layout auth-login-layout">
         <aside className="auth-login-showcase" aria-label="Présentation de ScolaPro">
           <div className="auth-login-showcase-brand">

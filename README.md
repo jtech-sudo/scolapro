@@ -34,7 +34,9 @@ npm install
 cp .env.example .env
 ```
 
-Complétez ensuite `.env` avec les valeurs requises, notamment `POSTGRES_PASSWORD`, `DATABASE_URL`, `JWT_SECRET` et `PLATFORM_ADMIN_BOOTSTRAP_KEY`. Ne partagez pas ce fichier et ne publiez pas ses secrets.
+Complétez ensuite `.env` avec les valeurs requises, notamment `POSTGRES_PASSWORD`, `POSTGRES_DB`, `DATABASE_URL`, `JWT_SECRET` et `PLATFORM_ADMIN_BOOTSTRAP_KEY`. Pour Neon, configurez aussi `DATABASE_URL_UNPOOLED` avec l’URL directe pour les migrations. Ne partagez pas ce fichier et ne publiez pas ses secrets.
+
+Les tables ScolaPro, les types et l’historique Prisma résident dans le schéma PostgreSQL `scolapro`. Les commandes Prisma refusent une URL dont le nom de base ne correspond pas à `POSTGRES_DB` (ou `SCOLARPRO_DATABASE_NAME`).
 
 ### Démarrer et gérer la base PostgreSQL locale
 
@@ -123,7 +125,7 @@ Vérifiez l’état de l’API après le déploiement :
 curl https://votre-domaine.com/api/v1/health/ready
 ```
 
-N’appliquez `npm run db:migrate:deploy` que sur une base dont l’historique de migrations Prisma est correctement initialisé. Pour une base existante sans historique, préparez d’abord une stratégie de sauvegarde et de baseline.
+`npm run db:migrate:deploy` applique les migrations dans l’ordre, puis compare la base obtenue au modèle Prisma. La commande est sûre à relancer : Prisma ignore celles déjà enregistrées et la vérification finale refuse tout schéma divergent. Les exécutions sont sérialisées avec un verrou advisory propre au schéma ScolaPro. Une base existante dans `public` est déplacée avec son historique vers `scolapro` uniquement lorsque son historique et ses objets correspondent aux migrations versionnées; ce basculement nécessite une fenêtre d’indisponibilité de l’API. Tout état incomplet ou inconnu bloque le déplacement dans une transaction. Sauvegardez toujours la base avant un premier déploiement.
 
 ### Autres commandes d’administration
 
@@ -147,7 +149,7 @@ npm run admin:reset-platform-password
 
 ## Démarrage local
 
-1. Copiez `.env.example` vers `.env` et définissez `POSTGRES_PASSWORD`, `DATABASE_URL`, `JWT_SECRET` et `PLATFORM_ADMIN_BOOTSTRAP_KEY`. Les deux clés secrètes doivent être distinctes et contenir au moins 32 caractères aléatoires. Ne publiez pas `.env`.
+1. Copiez `.env.example` vers `.env` et définissez `POSTGRES_DB`, `POSTGRES_PASSWORD`, `DATABASE_URL`, `JWT_SECRET` et `PLATFORM_ADMIN_BOOTSTRAP_KEY`. Les URL Neon doivent nommer la même base que `POSTGRES_DB`; utilisez `DATABASE_URL_UNPOOLED` directe pour les migrations. Les deux clés secrètes doivent être distinctes et contenir au moins 32 caractères aléatoires. Ne publiez pas `.env`.
 2. Démarrez PostgreSQL. Avec Docker : `docker compose up -d db`. Sur macOS, Postgres.app peut remplacer Docker.
 3. À la racine du dépôt : `npm install`.
 4. Générez le client Prisma et synchronisez la base de développement : `npm run db:generate`, puis `npm run db:push`.
@@ -164,13 +166,14 @@ Le fichier `compose.dokploy.yml` déploie le web, l’API et PostgreSQL. Dans Do
 
 Définissez les variables dans l’environnement de l’application Dokploy, jamais dans Git :
 
-- `POSTGRES_DB` et `POSTGRES_USER` : nom de la base et utilisateur dédiés.
+- `POSTGRES_DB` et `POSTGRES_USER` : nom de la base et utilisateur dédiés. Le nom doit correspondre au nom présent dans `DATABASE_URL`.
 - `POSTGRES_PASSWORD` : mot de passe long et aléatoire.
 - `DATABASE_URL` : `postgresql://USER:PASSWORD@HOST:5432` (par exemple `postgresql://USER:PASSWORD@HOST:5432`). Encodez les caractères spéciaux du mot de passe pour l’URL.
 - `JWT_SECRET` et `PLATFORM_ADMIN_BOOTSTRAP_KEY` : deux secrets distincts, aléatoires et d’au moins 32 caractères.
 - `WEB_ORIGIN` : origine exacte du site, par exemple `https://ecole.example.com`, sans chemin ni barre oblique finale.
+- `DATABASE_URL_UNPOOLED` : URL directe sans suffixe `-pooler` si le fournisseur fournit une connexion poolée; utilisée pour les migrations.
 
-Les migrations versionnées du schéma Prisma s’exécutent avant le démarrage de l’API. Le premier déploiement suppose une base PostgreSQL **vide**. Ne reliez pas la migration initiale à une base existante contenant des données sans établir d’abord une stratégie de baseline et de sauvegarde. Le volume `csp_postgres_data` conserve les données; configurez aussi des sauvegardes externes et testez leur restauration.
+Les migrations versionnées et leur vérification s’exécutent avant le démarrage de l’API, après validation que l’URL vise la base `POSTGRES_DB`. Les tables historiques de ScolaPro dans `public` sont déplacées avec leur historique vers `scolapro` si elles correspondent aux migrations locales; une base sans historique, incohérente ou portant des migrations inconnues est refusée et exige une stratégie de baseline explicite. Le volume `csp_postgres_data` conserve les données; configurez aussi des sauvegardes externes et testez leur restauration.
 
 Après déploiement, vérifiez `/api/v1/health/ready`, puis initialisez le compte plateforme avec `PLATFORM_ADMIN_BOOTSTRAP_KEY`. Le Compose local `compose.yml` reste destiné au développement.
 
@@ -213,7 +216,7 @@ npm test
 
 `npm run test:integration` crée un schéma PostgreSQL temporaire `scolapro_test_*`, le synchronise depuis le modèle Prisma, vérifie l’isolation au niveau Prisma et API entre deux écoles, puis supprime ce schéma. La commande exige une URL PostgreSQL pointant vers `localhost`, `127.0.0.1` ou `::1` et un rôle autorisé à créer des schémas. Elle ne modifie pas les tables du schéma `public`.
 
-`db:push` est réservé au développement local. Utilisez `npm run db:migrate:deploy` uniquement sur une base dont l’historique de migrations Prisma est correctement initialisé. Pour une base existante sans historique, établissez et vérifiez d’abord une stratégie de baseline et de sauvegarde; ne lancez pas cette commande directement.
+`db:push` est réservé au développement local. Utilisez `npm run db:migrate:deploy` pour déployer le schéma versionné; cette commande vérifie l’égalité finale entre la base et le modèle Prisma. Une base sans historique ou dans un état incohérent est refusée et doit faire l’objet d’une stratégie de baseline et de sauvegarde avant migration.
 
 ## Important
 

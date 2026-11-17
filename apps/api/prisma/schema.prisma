@@ -4,7 +4,9 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["scolapro"]
   url      = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 enum UserRole {
@@ -16,6 +18,7 @@ enum UserRole {
   ACCOUNTANT
   CASHIER
   PARENT
+  @@schema("scolapro")
 }
 
 enum SubscriptionPlan {
@@ -24,6 +27,7 @@ enum SubscriptionPlan {
   PREMIUM
   ENTERPRISE
   CUSTOM
+  @@schema("scolapro")
 }
 
 enum SubscriptionStatus {
@@ -32,23 +36,27 @@ enum SubscriptionStatus {
   PAST_DUE
   SUSPENDED
   CANCELED
+  @@schema("scolapro")
 }
 
 enum SubscriptionPlanRequestStatus {
   PENDING
   APPROVED
   REJECTED
+  @@schema("scolapro")
 }
 
 enum StudentExamQuestionType {
   MULTIPLE_CHOICE
   WRITTEN
+  @@schema("scolapro")
 }
 
 enum StudentExamAttemptStatus {
   IN_PROGRESS
   SUBMITTED
   GRADED
+  @@schema("scolapro")
 }
 
 enum SubscriptionPaymentMethod {
@@ -56,12 +64,14 @@ enum SubscriptionPaymentMethod {
   BANK_TRANSFER
   MOBILE_MONEY
   OTHER
+  @@schema("scolapro")
 }
 
 enum SchoolLevelType {
   PRIMARY
   MIDDLE
   HIGH
+  @@schema("scolapro")
 }
 
 enum EnrollmentStatus {
@@ -69,17 +79,20 @@ enum EnrollmentStatus {
   TRANSFERRED
   WITHDRAWN
   COMPLETED
+  @@schema("scolapro")
 }
 
 enum PaymentStatus {
   RECORDED
   CANCELLED
   REFUNDED
+  @@schema("scolapro")
 }
 
 enum ExpenseStatus {
   RECORDED
   CANCELLED
+  @@schema("scolapro")
 }
 
 enum AttendanceStatus {
@@ -87,28 +100,33 @@ enum AttendanceStatus {
   ABSENT
   LATE
   EXCUSED
+  @@schema("scolapro")
 }
 
 enum AttendanceSlot {
   MORNING
   AFTERNOON
+  @@schema("scolapro")
 }
 
 enum PortalNoticeStatus {
   DRAFT
   READY
   ARCHIVED
+  @@schema("scolapro")
 }
 
 enum TransportDirection {
   TO_SCHOOL
   FROM_SCHOOL
+  @@schema("scolapro")
 }
 
 enum StaffLeaveStatus {
   PENDING
   APPROVED
   REJECTED
+  @@schema("scolapro")
 }
 
 enum OnlineEnrollmentStatus {
@@ -116,6 +134,7 @@ enum OnlineEnrollmentStatus {
   ACCEPTED
   REJECTED
   ENROLLED
+  @@schema("scolapro")
 }
 
 model SchoolProfile {
@@ -134,6 +153,7 @@ model SchoolProfile {
   currency        String   @default("XOF")
   language        String   @default("fr")
   updatedAt       DateTime @updatedAt
+  @@schema("scolapro")
 }
 
 model RolePermission {
@@ -147,6 +167,7 @@ model RolePermission {
   canDelete Boolean  @default(false)
   updatedAt DateTime @updatedAt
   @@unique([schoolId, role, module])
+  @@schema("scolapro")
 }
 
 model School {
@@ -164,6 +185,7 @@ model School {
   memberships SchoolMembership[]
   subscriptionPayments PlatformSubscriptionPayment[]
   subscriptionPlanRequests SubscriptionPlanRequest[]
+  @@schema("scolapro")
 }
 
 model SubscriptionPlanRequest {
@@ -179,12 +201,14 @@ model SubscriptionPlanRequest {
   school          School                        @relation(fields: [schoolId], references: [id], onDelete: Restrict)
   @@index([status, requestedAt])
   @@index([schoolId, status])
+  @@schema("scolapro")
 }
 
 model PlatformPlanSetting {
   plan       SubscriptionPlan @id
   monthlyFee Int
   updatedAt  DateTime         @updatedAt
+  @@schema("scolapro")
 }
 
 model PlatformSubscriptionPayment {
@@ -201,6 +225,7 @@ model PlatformSubscriptionPayment {
   school      School                   @relation(fields: [schoolId], references: [id], onDelete: Restrict)
   @@index([schoolId, paidAt])
   @@index([period])
+  @@schema("scolapro")
 }
 
 model SchoolMembership {
@@ -215,6 +240,7 @@ model SchoolMembership {
   user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   @@unique([schoolId, userId])
   @@index([userId, isActive])
+  @@schema("scolapro")
 }
 
 model User {
@@ -230,6 +256,7 @@ model User {
   parentAccount ParentAccount?
   memberships SchoolMembership[]
   platformAdmin PlatformAdmin?
+  @@schema("scolapro")
 }
 
 model PlatformAdmin {
@@ -239,6 +266,7 @@ model PlatformAdmin {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@schema("scolapro")
 }
 
 model PlatformAuditLog {
@@ -251,6 +279,7 @@ model PlatformAuditLog {
   createdAt   DateTime @default(now())
   @@index([createdAt])
   @@index([entityType, entityId])
+  @@schema("scolapro")
 }
 
 model PortalSettings {
@@ -265,6 +294,7 @@ model PortalSettings {
   emailNotifications    Boolean  @default(false)
   smsNotifications      Boolean  @default(false)
   updatedAt             DateTime @updatedAt
+  @@schema("scolapro")
 }
 
 model SchoolYear {
@@ -283,6 +313,7 @@ model SchoolYear {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@unique([schoolId, name])
+  @@schema("scolapro")
 }
 
 model Term {
@@ -299,6 +330,7 @@ model Term {
   reportCards ReportCard[]
   @@unique([schoolYearId, order])
   @@unique([schoolYearId, name])
+  @@schema("scolapro")
 }
 
 model Level {
@@ -311,6 +343,7 @@ model Level {
   classes   SchoolClass[]
   reportCardRules ReportCardRule[]
   @@unique([schoolId, name])
+  @@schema("scolapro")
 }
 
 model SchoolClass {
@@ -331,6 +364,7 @@ model SchoolClass {
   isActive     Boolean @default(true)
   createdAt    DateTime @default(now())
   @@unique([name, levelId, schoolYearId])
+  @@schema("scolapro")
 }
 
 model Student {
@@ -356,6 +390,7 @@ model Student {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   @@unique([schoolId, matricule])
+  @@schema("scolapro")
 }
 
 model OnlineEnrollmentRequest {
@@ -382,6 +417,7 @@ model OnlineEnrollmentRequest {
   updatedAt             DateTime               @updatedAt
   @@index([schoolId, status, createdAt])
   @@index([schoolId, requestedClassId])
+  @@schema("scolapro")
 }
 
 model Enrollment {
@@ -394,6 +430,7 @@ model Enrollment {
   student   Student          @relation(fields: [studentId], references: [id], onDelete: Restrict)
   schoolClass SchoolClass    @relation(fields: [classId], references: [id], onDelete: Restrict)
   @@unique([studentId, classId])
+  @@schema("scolapro")
 }
 
 model TransportRoute {
@@ -412,6 +449,7 @@ model TransportRoute {
   updatedAt   DateTime            @updatedAt
   @@unique([schoolId, name, direction])
   @@index([schoolId, isActive, direction])
+  @@schema("scolapro")
 }
 
 model TransportStop {
@@ -426,6 +464,7 @@ model TransportStop {
   createdAt   DateTime            @default(now())
   @@unique([routeId, order])
   @@index([schoolId, routeId])
+  @@schema("scolapro")
 }
 
 model TransportStudent {
@@ -443,6 +482,7 @@ model TransportStudent {
   @@unique([schoolId, routeId, studentId])
   @@index([schoolId, studentId, isActive])
   @@index([schoolId, routeId, isActive])
+  @@schema("scolapro")
 }
 
 model AttendanceSession {
@@ -459,6 +499,7 @@ model AttendanceSession {
   updatedAt   DateTime      @updatedAt
   @@unique([classId, date, slot])
   @@index([date, slot])
+  @@schema("scolapro")
 }
 
 model AttendanceRecord {
@@ -477,6 +518,7 @@ model AttendanceRecord {
   updatedAt      DateTime         @updatedAt
   @@unique([sessionId, studentId])
   @@index([studentId, status])
+  @@schema("scolapro")
 }
 
 model Subject {
@@ -490,6 +532,7 @@ model Subject {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   @@unique([schoolId, code])
+  @@schema("scolapro")
 }
 
 model Guardian {
@@ -507,6 +550,7 @@ model Guardian {
   notices     PortalNotice[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  @@schema("scolapro")
 }
 
 model ParentAccount {
@@ -517,6 +561,7 @@ model ParentAccount {
   guardian   Guardian @relation(fields: [guardianId], references: [id], onDelete: Restrict)
   user       User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   createdAt  DateTime @default(now())
+  @@schema("scolapro")
 }
 
 model PortalNotice {
@@ -533,6 +578,7 @@ model PortalNotice {
   updatedAt   DateTime          @updatedAt
   @@index([status, createdAt])
   @@index([guardianId, status])
+  @@schema("scolapro")
 }
 
 model StudentGuardian {
@@ -545,6 +591,7 @@ model StudentGuardian {
   guardian   Guardian @relation(fields: [guardianId], references: [id], onDelete: Restrict)
   @@id([studentId, guardianId])
   @@index([guardianId])
+  @@schema("scolapro")
 }
 
 model LibraryBook {
@@ -562,6 +609,7 @@ model LibraryBook {
   updatedAt       DateTime      @updatedAt
   @@unique([schoolId, isbn])
   @@index([schoolId, title])
+  @@schema("scolapro")
 }
 
 model LibraryLoan {
@@ -579,6 +627,7 @@ model LibraryLoan {
   @@index([schoolId, dueAt])
   @@index([bookId, returnedAt])
   @@index([studentId, returnedAt])
+  @@schema("scolapro")
 }
 
 model Teacher {
@@ -596,6 +645,7 @@ model Teacher {
   updatedAt      DateTime @updatedAt
   @@unique([schoolId, employeeNumber])
   @@unique([schoolId, email])
+  @@schema("scolapro")
 }
 
 model StaffMember {
@@ -615,6 +665,7 @@ model StaffMember {
   updatedAt      DateTime    @updatedAt
   @@unique([schoolId, employeeNumber])
   @@index([schoolId, isActive, lastName])
+  @@schema("scolapro")
 }
 
 model StaffLeave {
@@ -631,6 +682,7 @@ model StaffLeave {
   updatedAt   DateTime        @updatedAt
   @@index([schoolId, status, startsOn])
   @@index([staffId, startsOn, endsOn])
+  @@schema("scolapro")
 }
 
 model TeachingAssignment {
@@ -646,6 +698,7 @@ model TeachingAssignment {
   createdAt DateTime @default(now())
   @@unique([classId, subjectId])
   @@index([teacherId])
+  @@schema("scolapro")
 }
 
 model TimetableEntry {
@@ -661,21 +714,25 @@ model TimetableEntry {
   updatedAt    DateTime          @updatedAt
   @@index([schoolId, dayOfWeek, startsAt])
   @@index([assignmentId, dayOfWeek])
+  @@schema("scolapro")
 }
 
 enum AssessmentStatus {
   OPEN
   LOCKED
+  @@schema("scolapro")
 }
 
 enum ReportCardStatus {
   DRAFT
   VALIDATED
+  @@schema("scolapro")
 }
 
 enum ReportCardRuleScope {
   LEVEL
   CLASS
+  @@schema("scolapro")
 }
 
 model Assessment {
@@ -703,6 +760,7 @@ model Assessment {
   updatedAt      DateTime         @updatedAt
   @@index([classId, subjectId, termId])
   @@index([assessmentDate])
+  @@schema("scolapro")
 }
 
 model Grade {
@@ -718,6 +776,7 @@ model Grade {
   updatedAt    DateTime   @updatedAt
   @@unique([assessmentId, studentId])
   @@index([studentId])
+  @@schema("scolapro")
 }
 
 model StudentExamAccount {
@@ -730,6 +789,7 @@ model StudentExamAccount {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   @@unique([schoolId, studentId])
+  @@schema("scolapro")
 }
 
 model StudentExamQuestion {
@@ -746,6 +806,7 @@ model StudentExamQuestion {
   createdAt    DateTime                @default(now())
   @@unique([assessmentId, order])
   @@index([assessmentId, type])
+  @@schema("scolapro")
 }
 
 model StudentExamChoice {
@@ -758,6 +819,7 @@ model StudentExamChoice {
   question   StudentExamQuestion @relation(fields: [questionId], references: [id], onDelete: Restrict)
   answers    StudentExamAnswer[]
   @@unique([questionId, order])
+  @@schema("scolapro")
 }
 
 model StudentExamAttempt {
@@ -776,6 +838,7 @@ model StudentExamAttempt {
   answers      StudentExamAnswer[]
   @@unique([assessmentId, studentId])
   @@index([schoolId, status, submittedAt])
+  @@schema("scolapro")
 }
 
 model StudentExamAnswer {
@@ -791,6 +854,7 @@ model StudentExamAnswer {
   choice       StudentExamChoice?  @relation(fields: [choiceId], references: [id], onDelete: Restrict)
   @@unique([attemptId, questionId])
   @@index([schoolId, questionId])
+  @@schema("scolapro")
 }
 
 model ReportCardRule {
@@ -814,6 +878,7 @@ model ReportCardRule {
   updatedAt         DateTime           @updatedAt
   @@unique([levelId, classId, schoolYearId, termId])
   @@index([schoolYearId, termId])
+  @@schema("scolapro")
 }
 
 model ReportCard {
@@ -839,6 +904,7 @@ model ReportCard {
   updatedAt      DateTime         @updatedAt
   @@unique([studentId, termId])
   @@index([classId, termId, status])
+  @@schema("scolapro")
 }
 
 model AssessmentRule {
@@ -853,6 +919,7 @@ model AssessmentRule {
   effectiveUntil DateTime?
   createdAt      DateTime @default(now())
   // La validation des règles chevauchantes sera faite dans le service métier.
+  @@schema("scolapro")
 }
 
 model FeeType {
@@ -862,6 +929,7 @@ model FeeType {
   description String?
   isActive    Boolean  @default(true)
   invoices    Invoice[]
+  @@schema("scolapro")
 }
 
 model ExpenseCategory {
@@ -874,6 +942,7 @@ model ExpenseCategory {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   @@unique([schoolId, name])
+  @@schema("scolapro")
 }
 
 model Expense {
@@ -898,6 +967,7 @@ model Expense {
   @@unique([schoolId, reference])
   @@index([schoolYearId, spentAt])
   @@index([categoryId, spentAt])
+  @@schema("scolapro")
 }
 
 model Invoice {
@@ -917,6 +987,7 @@ model Invoice {
   createdAt     DateTime            @default(now())
   @@unique([schoolId, invoiceNumber])
   @@index([schoolYearId, studentId])
+  @@schema("scolapro")
 }
 
 model InvoiceInstallment {
@@ -929,6 +1000,7 @@ model InvoiceInstallment {
   invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
   createdAt DateTime @default(now())
   @@index([invoiceId, dueDate])
+  @@schema("scolapro")
 }
 
 model Payment {
@@ -946,6 +1018,7 @@ model Payment {
   allocations   PaymentAllocation[]
   @@unique([schoolId, receiptNumber])
   // recordedById sera relié au modèle User dans une migration métier ultérieure.
+  @@schema("scolapro")
 }
 
 model PaymentAllocation {
@@ -957,6 +1030,7 @@ model PaymentAllocation {
   payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
   @@unique([paymentId, invoiceId])
+  @@schema("scolapro")
 }
 
 model AuditLog {
@@ -968,4 +1042,5 @@ model AuditLog {
   entityId    String?
   details     Json?
   createdAt   DateTime @default(now())
+  @@schema("scolapro")
 }

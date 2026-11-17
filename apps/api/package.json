@@ -8,13 +8,13 @@
     "build": "nest build",
     "start:prod": "node dist/main",
     "typecheck": "tsc --noEmit",
-    "test": "npm run build && node --test test/tenant-auth.middleware.test.cjs test/prisma-tenant-write.test.cjs test/online-enrollment-mailer.test.cjs",
+    "test": "npm run build && node --test test/tenant-auth.middleware.test.cjs test/prisma-tenant-write.test.cjs test/online-enrollment-mailer.test.cjs test/database-target.test.cjs",
     "test:integration": "npm run build && node test/run-tenant-isolation.cjs",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "prisma:db:push": "prisma db push",
     "prisma:migrate:dev": "prisma migrate dev",
-    "prisma:migrate:deploy": "prisma migrate deploy"
+    "prisma:migrate:deploy": "node scripts/migrate-deploy.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.15",

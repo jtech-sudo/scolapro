@@ -23,10 +23,12 @@ services:
     restart: "no"
     environment:
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL with host db}
+      DATABASE_URL_UNPOOLED: ${DATABASE_URL_UNPOOLED:-}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
     depends_on:
       db:
         condition: service_healthy
-    command: ["npx", "prisma", "migrate", "deploy", "--schema", "apps/api/prisma/schema.prisma"]
+    command: ["node", "apps/api/scripts/migrate-deploy.cjs"]
 
   api:
     build:
@@ -38,6 +40,7 @@ services:
       NODE_ENV: production
       API_PORT: "3000"
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL with host db}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
       PLATFORM_ADMIN_BOOTSTRAP_KEY: ${PLATFORM_ADMIN_BOOTSTRAP_KEY:?Set PLATFORM_ADMIN_BOOTSTRAP_KEY}
       WEB_ORIGIN: ${WEB_ORIGIN:?Set WEB_ORIGIN}

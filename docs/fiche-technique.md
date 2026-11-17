@@ -68,13 +68,16 @@ Prérequis : Node.js 22 LTS, npm et PostgreSQL 16. Docker Compose est facultatif
 Variables à définir dans `.env` à partir de `.env.example` :
 
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` : connexion PostgreSQL.
-- `DATABASE_URL` : URL utilisée par Prisma.
+- `DATABASE_URL` : URL de la base applicative indiquée par `POSTGRES_DB`.
+- `DATABASE_URL_UNPOOLED` : URL directe non poolée utilisée pour les migrations, si disponible.
 - `API_PORT` : port API, `3000` par défaut.
 - `JWT_SECRET` : secret aléatoire d’au moins 32 caractères.
 - `PLATFORM_ADMIN_BOOTSTRAP_KEY` : clé distincte d’au moins 32 caractères pour l’initialisation du premier administrateur plateforme.
 - `VITE_API_BASE_URL` : URL API utilisée par le client web.
 
 Ne jamais versionner `.env`, publier des jetons ou placer des secrets opérateur dans le client web.
+
+Les tables, types et historique Prisma de ScolaPro utilisent le schéma PostgreSQL `scolapro`. Le déploiement refuse les URLs pointant vers une base différente de celle déclarée par `POSTGRES_DB` et vérifie que le schéma réel correspond au modèle Prisma.
 
 ## Commandes de développement
 

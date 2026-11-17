@@ -2,6 +2,10 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { TenantContextService } from './tenant-context.service';
 
+const { resolveRuntimeDatabaseUrl } = require('../../database-target.cjs') as {
+  resolveRuntimeDatabaseUrl: (url: string | undefined, expectedDatabase?: string) => string;
+};
+
 const TENANT_MODELS = new Set([
   'SchoolProfile', 'RolePermission', 'PortalSettings', 'SchoolYear', 'Term', 'Level', 'SchoolClass',
   'Student', 'Enrollment', 'AttendanceSession', 'AttendanceRecord', 'Subject', 'Guardian', 'ParentAccount',
@@ -50,7 +54,12 @@ export function addTenantToCreate(data: unknown, schoolId: string, relationWrapp
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleDestroy {
   constructor(private readonly tenantContext: TenantContextService) {
-    super();
+    super({
+      datasourceUrl: resolveRuntimeDatabaseUrl(
+        process.env.DATABASE_URL,
+        process.env.SCOLARPRO_DATABASE_NAME ?? process.env.POSTGRES_DB,
+      ),
+    });
     const extended = this.$extends({
       query: {
         $allModels: {

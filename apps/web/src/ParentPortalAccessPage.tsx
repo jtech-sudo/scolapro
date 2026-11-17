@@ -47,8 +47,8 @@ export function ParentPortalAccessPage() {
     setPassword('');
   }
 
-  return <main className="auth-shell auth-login-shell"><div className="auth-layout auth-login-layout"><section className="auth-card auth-login-card">
-    <div className="auth-card-brand auth-login-brand"><img src="/ndev-logo-login.png" alt="NDEV Digital" /><span><small>ESPACE FAMILLES</small></span></div>
+  return <main className="auth-shell auth-login-shell school-login-shell"><div className="auth-layout auth-login-layout"><section className="auth-card auth-login-card">
+    <div className="auth-card-brand auth-login-brand"><img src="/scolapro-icon.svg" alt="" /><span><strong>ScolaPro</strong><small>ESPACE FAMILLES</small></span></div>
     {checking ? <p className="auth-description">Vérification de votre session…</p> : session ? <>
       <p className="eyebrow">SESSION PARENT</p>
       <h1>Bonjour {session.guardian.firstName}</h1>

@@ -343,10 +343,10 @@ function AuthenticatedApp() {
     <main className="auth-loading-screen" aria-busy="true">
       <div className="auth-loading-brand" role="status" aria-live="polite">
         <img src="/scolapro-icon.svg" alt="" />
-        <strong>ScolaPro</strong>
-        <span className="auth-loading-spinner" aria-hidden="true" />
+        <span className="auth-loading-dots" aria-hidden="true"><i /><i /><i /><i /><i /></span>
         <span className="visually-hidden">Chargement de ScolaPro…</span>
       </div>
+      <footer className="auth-loading-footer">© {new Date().getFullYear()} ScolaPro · Gestion scolaire</footer>
     </main>
   );
   if (!tenant) return <AuthPage onAuthenticated={(session) => setTenant({ user: session.user, school: session.school })} />;
