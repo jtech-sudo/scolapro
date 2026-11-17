@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">ScolaPro</title>
+  <desc id="desc">Icône ScolaPro avec un monogramme S vert et blanc.</desc>
+  <defs>
+    <linearGradient id="brand-bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#287253"/>
+      <stop offset="100%" stop-color="#153b32"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#brand-bg)"/>
+  <text x="256" y="380" text-anchor="middle" fill="#f5f7f4" font-family="Arial, Helvetica, sans-serif" font-size="390" font-weight="800">S</text>
+  <rect x="350" y="83" width="58" height="58" rx="16" fill="#a8d5b5"/>
+</svg>
