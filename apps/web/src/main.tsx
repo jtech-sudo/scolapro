@@ -60,6 +60,11 @@ function AuthenticatedApp() {
   const notificationButtonRef = useRef<HTMLButtonElement>(null);
   const notificationCloseButtonRef = useRef<HTMLButtonElement>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [startupLoading, setStartupLoading] = useState(true);
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => setStartupLoading(false), 1100);
+    return () => window.clearTimeout(timer);
+  }, []);
   React.useEffect(() => {
     void apiRequest<{ status: string }>('/health')
       .then(() => apiRequest<{ status: string }>('/health/ready')
@@ -334,7 +339,16 @@ function AuthenticatedApp() {
     setDrawerOpen(false);
   }
 
-  if (authLoading) return <main className="auth-shell"><div className="auth-loading">Vérification de votre session…</div></main>;
+  if (authLoading || startupLoading) return (
+    <main className="auth-loading-screen" aria-busy="true">
+      <div className="auth-loading-brand" role="status" aria-live="polite">
+        <img src="/scolapro-icon.svg" alt="" />
+        <strong>ScolaPro</strong>
+        <span className="auth-loading-spinner" aria-hidden="true" />
+        <span className="visually-hidden">Chargement de ScolaPro…</span>
+      </div>
+    </main>
+  );
   if (!tenant) return <AuthPage onAuthenticated={(session) => setTenant({ user: session.user, school: session.school })} />;
 
   return (

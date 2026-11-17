@@ -165,8 +165,7 @@ export function PlatformPage() {
       <div className="auth-layout auth-login-layout">
       <section className="auth-card auth-login-card platform-auth-card">
         <div className="auth-card-brand auth-login-brand"><img src="/ndev-logo-login.png" alt="NDEV Digital" /></div>
-        <h1>{needsBootstrap ? 'Initialiser la plateforme' : 'Espace d’administration'}</h1>
-        <p className="auth-description">Gérez les établissements, leurs accès et leurs abonnements depuis cet espace dédié à l’administration de la plateforme.</p>
+        {needsBootstrap && <h1>Initialiser la plateforme</h1>}
         <form onSubmit={(event) => void handleSubmit(event)}>
           {needsBootstrap && <>
             <label className="field-label">Clé de configuration initiale<input required minLength={32} autoComplete="off" value={bootstrapKey} onChange={(event) => setBootstrapKey(event.target.value)} /></label>
