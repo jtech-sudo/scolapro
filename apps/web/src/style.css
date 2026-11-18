@@ -4062,3 +4062,118 @@ button { color: inherit; }
 	.presentation-hero-seal { min-height: 250px; }
 	.presentation-hero-seal img { width: 104px; height: 104px; }
 }
+.school-auth-page {
+	min-height: 100vh;
+	place-items: center;
+	padding: clamp(28px, 5vh, 56px) clamp(18px, 4vw, 48px);
+	background:
+		radial-gradient(ellipse at 2% 38%, rgba(255, 133, 87, .28), transparent 34%),
+		radial-gradient(ellipse at 98% 24%, rgba(106, 130, 232, .28), transparent 38%),
+		linear-gradient(145deg, #f8fbff 0%, #fffaf7 52%, #f2f7ff 100%);
+}
+.school-auth-page .auth-login-layout {
+	display: block;
+	width: min(720px, 100%);
+	min-height: 0;
+	overflow: visible;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+}
+.school-auth-page .auth-login-showcase { display: none; }
+.school-auth-page .auth-login-card {
+	width: 100%;
+	min-height: 0;
+	padding: 0 clamp(20px, 5vw, 56px);
+	border-radius: 0;
+	background: transparent;
+}
+.school-auth-page .auth-login-mobile-brand {
+	position: relative;
+	display: grid;
+	min-height: clamp(270px, 36vh, 350px);
+	place-content: center;
+	justify-items: center;
+	gap: 15px;
+	overflow: visible;
+	margin: 0 0 16px;
+}
+.school-auth-page .auth-login-mobile-brand::before,
+.school-auth-page .auth-login-mobile-brand::after {
+	position: absolute;
+	top: 44%;
+	left: 50%;
+	aspect-ratio: 1;
+	border: 1px solid rgba(255, 255, 255, .88);
+	border-radius: 50%;
+	content: "";
+	pointer-events: none;
+	transform: translate(-50%, -50%);
+}
+.school-auth-page .auth-login-mobile-brand::before {
+	width: min(70vw, 330px);
+	box-shadow: 0 0 0 48px rgba(255, 255, 255, .14), 0 0 0 92px rgba(255, 255, 255, .1);
+}
+.school-auth-page .auth-login-mobile-brand::after { width: min(48vw, 220px); }
+.school-auth-page .auth-login-mobile-brand img {
+	position: relative;
+	z-index: 1;
+	width: 126px;
+	height: 126px;
+	padding: 10px;
+	border: 5px solid #fff;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 14px 36px rgba(37, 69, 111, .17);
+}
+.school-auth-page .auth-login-mobile-brand strong { position: relative; z-index: 1; color: #203d60; font-size: 1.25rem; }
+.school-auth-page .auth-login-card > .eyebrow { font-size: .72rem; text-align: center; }
+.school-auth-page .auth-login-card > h1 { font-size: clamp(2rem, 4vw, 2.45rem); }
+.school-auth-page .auth-login-card > h1,
+.school-auth-page .auth-login-card > .auth-description { text-align: center; }
+.school-auth-page .auth-login-card .auth-description { margin-bottom: 28px; font-size: .95rem; }
+.school-auth-page .auth-login-card .field-label { margin-top: 20px; font-size: .82rem; }
+.school-auth-page .auth-login-card .field-label input {
+	min-height: 60px;
+	padding-inline: 18px;
+	border: 1px solid rgba(255, 255, 255, .92);
+	border-radius: 16px;
+	background: rgba(255, 255, 255, .96);
+	box-shadow: 0 10px 24px rgba(47, 76, 118, .08);
+	font-size: .92rem;
+}
+.school-auth-page .auth-login-card .field-hint { font-size: .7rem; }
+.school-auth-page .auth-login-card .auth-submit {
+	min-height: 60px;
+	justify-content: center;
+	border-radius: 16px;
+	background: linear-gradient(110deg, #07518e, #1268a8);
+	box-shadow: 0 12px 24px rgba(11, 83, 145, .22);
+	font-size: .9rem;
+	font-weight: 800;
+}
+.school-auth-page .auth-login-card .auth-submit span { margin-left: 12px; }
+.school-auth-page .auth-login-links { justify-content: center; flex-wrap: wrap; gap: 14px 22px; margin-top: 28px; }
+.school-auth-page .auth-login-discover { align-self: center; margin-top: 20px; }
+@media (max-width: 600px) {
+	.school-auth-page {
+		min-height: 100svh;
+		align-items: center;
+		padding: max(10px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
+	}
+	.school-auth-page .auth-login-layout { width: min(560px, 100%); min-height: 0; border-radius: 22px; }
+	.school-auth-page .auth-login-card { min-height: 0; padding: 0 6px; border-radius: 0; background: transparent; }
+	.school-auth-page .auth-login-mobile-brand { min-height: 260px; margin-bottom: 0; }
+	.school-auth-page .auth-login-mobile-brand img { width: 116px; height: 116px; }
+	.school-auth-page .auth-login-card > h1 { font-size: 1.9rem; }
+	.school-auth-page .auth-login-card .field-label { font-size: .78rem; }
+	.school-auth-page .auth-login-card .field-label input { min-height: 54px; }
+	.school-auth-page .auth-login-card .auth-submit { min-height: 58px; }
+	.school-auth-page .auth-login-links { align-items: center; flex-direction: row; }
+}
+@media (max-width: 360px) {
+	.school-auth-page { padding-inline: 14px; }
+	.school-auth-page .auth-login-mobile-brand { min-height: 238px; }
+	.school-auth-page .auth-login-card { padding-inline: 4px; }
+}

@@ -48,7 +48,7 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated: (session: AuthS
   }
 
   return (
-    <main className="auth-shell auth-login-shell school-login-shell">
+    <main className="auth-shell auth-login-shell school-login-shell school-auth-page">
       <div className="auth-layout auth-login-layout">
         <aside className="auth-login-showcase" aria-label="Présentation de ScolaPro">
           <div className="auth-login-showcase-brand">
@@ -92,12 +92,12 @@ export function AuthPage({ onAuthenticated }: { onAuthenticated: (session: AuthS
             <strong>ScolaPro</strong>
           </div>
           <p className="eyebrow">ESPACE ÉCOLE</p>
-          <h1>Bon retour parmi nous</h1>
-          <p className="auth-description">Connectez-vous à votre espace scolaire.</p>
+          <h1>Bienvenue dans ScolaPro</h1>
+          <p className="auth-description">Votre espace de gestion scolaire.</p>
           <form onSubmit={(event) => void handleSubmit(event)}>
             <label className="field-label">
               Identifiant de l’école
-              <input required minLength={2} maxLength={100} autoCapitalize="none" autoComplete="organization" value={schoolSlug} onChange={(event) => setSchoolSlug(event.target.value)} placeholder="identifiant-fourni-par-l’école" />
+              <input required minLength={1} maxLength={6} autoCapitalize="none" autoComplete="organization" value={schoolSlug} onChange={(event) => setSchoolSlug(event.target.value)} placeholder="Ex. a1b2c3" />
               <small className="field-hint">L’identifiant est communiqué par l’administration de la plateforme.</small>
             </label>
             <label className="field-label">
