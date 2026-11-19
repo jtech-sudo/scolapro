@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from 'express';
 import { TenantContextService } from '../database/tenant-context.service';
 import { AuthService } from './auth.service';
 
-type AccessClaims = { sub: string; schoolId?: string; role?: string; tokenType?: 'PLATFORM_ADMIN' | 'PARENT'; guardianId?: string; parentAccountId?: string };
+type AccessClaims = { sub: string; schoolId?: string; role?: string; tokenType?: 'PLATFORM_ADMIN' | 'PLATFORM_SCHOOL_ACCESS' | 'PARENT'; guardianId?: string; parentAccountId?: string };
 
 type AuthenticatedRequest = Request & { auth?: AccessClaims };
 
@@ -61,6 +61,13 @@ export class TenantAuthMiddleware implements NestMiddleware {
       }
       if (path.startsWith('/api/v1/parent-portal/parent/')) {
         return response.status(403).json({ statusCode: 403, message: 'Cette route est réservée aux sessions parent dédiées.' });
+      }
+      if (claims.tokenType === 'PLATFORM_SCHOOL_ACCESS') {
+        if (!claims.schoolId || claims.role !== 'ADMIN') throw new Error('Platform school access claims are incomplete.');
+        const platformAccess = await this.auth.validatePlatformSchoolAccess(claims.sub, claims.schoolId);
+        if (!platformAccess) return response.status(401).json({ statusCode: 401, message: 'Cette session d’assistance ou cet accès école a expiré.' });
+        request.auth = claims;
+        return this.tenantContext.run(platformAccess, async () => next());
       }
       if (!claims.schoolId || claims.tokenType === 'PLATFORM_ADMIN' || claims.role === 'PARENT') throw new Error('School token claims are incomplete.');
       const membership = await this.auth.validateMembership(claims.sub, claims.schoolId);

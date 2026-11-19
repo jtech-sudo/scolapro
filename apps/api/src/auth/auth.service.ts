@@ -111,6 +111,71 @@ export class AuthService {
     return { user: { id: admin.user.id, fullName: admin.user.fullName, email: admin.user.email, role: 'PLATFORM_ADMIN' as const } };
   }
 
+  async startPlatformSchoolAccess(schoolId: string, actorUserId: string) {
+    const access = await this.validatePlatformSchoolAccess(actorUserId, schoolId);
+    if (!access) throw new UnauthorizedException('L’accès à cette école est indisponible.');
+    const [admin, school] = await Promise.all([
+      this.prisma.platformAdmin.findUnique({ where: { userId: actorUserId }, include: { user: true } }),
+      this.prisma.school.findUnique({ where: { id: schoolId }, select: { id: true, name: true, slug: true, isActive: true } }),
+    ]);
+    if (!admin?.isActive || !admin.user.isActive || !school?.isActive) {
+      throw new UnauthorizedException('L’accès à cette école est indisponible.');
+    }
+    const accessToken = await this.jwt.signAsync(
+      { sub: actorUserId, schoolId, role: UserRole.ADMIN, tokenType: 'PLATFORM_SCHOOL_ACCESS' },
+      { expiresIn: '30m' },
+    );
+    await this.prisma.platformAuditLog.create({
+      data: { actorUserId, action: 'PLATFORM_SCHOOL_ACCESS_STARTED', entityType: 'School', entityId: schoolId, details: { expiresInMinutes: 30 } },
+    });
+    return {
+      accessToken,
+      user: { id: admin.user.id, fullName: admin.user.fullName, email: admin.user.email, role: UserRole.ADMIN },
+      school: { id: school.id, name: school.name, slug: school.slug },
+    };
+  }
+
+  async validatePlatformSchoolAccess(userId: string, schoolId: string) {
+    const [admin, school] = await Promise.all([
+      this.validatePlatformAdmin(userId),
+      this.prisma.school.findUnique({ where: { id: schoolId }, select: { id: true, isActive: true } }),
+    ]);
+    if (!admin || !school?.isActive) return null;
+    return { schoolId, userId, role: UserRole.ADMIN };
+  }
+
+  async getCurrentPlatformSchool(userId: string, schoolId: string) {
+    const access = await this.validatePlatformSchoolAccess(userId, schoolId);
+    if (!access) throw new UnauthorizedException('Cette session d’assistance n’est plus active.');
+    const [admin, school] = await Promise.all([
+      this.prisma.platformAdmin.findUnique({ where: { userId }, include: { user: true } }),
+      this.prisma.school.findUnique({ where: { id: schoolId }, select: { id: true, name: true, slug: true, isActive: true } }),
+    ]);
+    if (!admin?.isActive || !admin.user.isActive || !school?.isActive) {
+      throw new UnauthorizedException('Cette session d’assistance n’est plus active.');
+    }
+    return {
+      user: { id: admin.user.id, fullName: admin.user.fullName, email: admin.user.email, role: UserRole.ADMIN },
+      school: { id: school.id, name: school.name, slug: school.slug },
+      platformAccess: true,
+    };
+  }
+
+  getCurrentPlatformSchoolPermissions() {
+    return {
+      role: UserRole.ADMIN,
+      permissions: ADMIN_MODULES.map((module) => ({ module, canView: true, canCreate: true, canUpdate: true, canDelete: true })),
+    };
+  }
+
+  async listCurrentPlatformSchool(userId: string, schoolId: string) {
+    const access = await this.validatePlatformSchoolAccess(userId, schoolId);
+    if (!access) throw new UnauthorizedException('Cette session d’assistance n’est plus active.');
+    const school = await this.prisma.school.findUnique({ where: { id: schoolId }, select: { id: true, name: true, slug: true } });
+    if (!school) throw new UnauthorizedException('Cette session d’assistance n’est plus active.');
+    return [{ ...school, role: UserRole.ADMIN }];
+  }
+
   async listPlatformSchools() {
     const schools = await this.prisma.school.findMany({
       include: {

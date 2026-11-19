@@ -312,6 +312,11 @@ function AuthenticatedApp() {
   }
 
   function signOut() {
+    if (tenant?.platformAccess) {
+      clearAuthToken();
+      window.location.assign('/platform');
+      return;
+    }
     clearAuthToken();
     setTenant(null);
     setTenantError('');
@@ -400,6 +405,7 @@ function AuthenticatedApp() {
       </aside>
 
       <main className="main-area">
+      {tenant.platformAccess && <div className="platform-access-banner" role="status"><span>Mode assistance plateforme · {tenant.school.name}</span><button type="button" onClick={signOut}>Retour à la plateforme</button></div>}
         <header className="topbar">
           <button type="button" className="mobile-menu-button" aria-label={drawerOpen ? 'Fermer le menu de navigation' : 'Ouvrir le menu de navigation'} aria-controls="primary-navigation" aria-expanded={drawerOpen} onClick={() => setDrawerOpen((open) => !open)}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>

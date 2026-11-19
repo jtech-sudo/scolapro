@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
-import { ADMIN_MODULES, AdminModuleKey, AdminUser, apiRequest, RolePermission, SchoolProfile, USER_ROLES, UserRole } from './api';
+import { ADMIN_MODULES, AdminModuleKey, AdminUser, apiRequest, RolePermission, SchoolProfile, setAuthToken, USER_ROLES, UserRole } from './api';
 
 type PlatformSchoolRef = { id: string; name: string; slug: string };
 type PlatformMember = AdminUser & { membershipId: string };
@@ -46,6 +46,7 @@ export function PlatformSchoolManagement({ school, onClose, onResetPassword }: {
   const [selectedRole, setSelectedRole] = useState<UserRole>('ADMIN');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [openingWorkspace, setOpeningWorkspace] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const base = `/platform/schools/${school.id}/administration`;
@@ -70,6 +71,19 @@ export function PlatformSchoolManagement({ school, onClose, onResetPassword }: {
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Impossible de charger l’administration de cette école.');
     } finally { setLoading(false); }
+  }
+
+  async function openWorkspace() {
+    setOpeningWorkspace(true);
+    setError('');
+    try {
+      const session = await apiRequest<{ accessToken: string }>(`/platform/schools/${school.id}/access`, { method: 'POST' });
+      setAuthToken(session.accessToken);
+      window.location.assign('/');
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Impossible d’ouvrir cet espace école.');
+      setOpeningWorkspace(false);
+    }
   }
 
   useEffect(() => { void loadData(); }, [school.id]);
@@ -150,6 +164,7 @@ export function PlatformSchoolManagement({ school, onClose, onResetPassword }: {
   return <div className="school-modal-backdrop platform-management-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !saving) onClose(); }}>
     <section className="platform-management-dialog" role="dialog" aria-modal="true" aria-labelledby="platform-school-management-title">
       <header className="platform-management-header"><div><p className="platform-section-kicker">GESTION PAR L’ADMINISTRATEUR DE LA PLATEFORME</p><h2 id="platform-school-management-title">{school.name}</h2><small>{school.slug}</small></div><button type="button" className="school-modal-close" aria-label="Fermer" onClick={onClose}>×</button></header>
+      <div className="platform-management-access"><span>Accès d’assistance temporaire, limité à cette école.</span><button type="button" disabled={openingWorkspace} onClick={() => void openWorkspace()}>{openingWorkspace ? 'Ouverture…' : 'Ouvrir l’espace école'} <span aria-hidden="true">↗</span></button></div>
       <nav className="organization-tabs platform-management-tabs" aria-label={`Administration de ${school.name}`}>
         {([['profile', 'Paramètres'], ['users', `Comptes (${members.length})`], ['permissions', 'Permissions']] as const).map(([id, label]) => <button key={id} type="button" className={tab === id ? 'organization-tab active' : 'organization-tab'} onClick={() => setTab(id)}>{label}</button>)}
       </nav>

@@ -34,7 +34,7 @@ export function resolveApiBaseUrl({
   const browserProtocol = protocol || 'http:';
 
   if (isLocalNetworkHost(browserHost) && isLocalEnvApiUrl(envUrl)) {
-    return `${browserProtocol}//${browserHost}:3000/api/v1`;
+    return '/api/v1';
   }
 
   if (envUrl) {

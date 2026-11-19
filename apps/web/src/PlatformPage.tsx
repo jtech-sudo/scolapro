@@ -218,7 +218,7 @@ export function PlatformPage() {
       </aside>
       <div className="platform-main">
         <header className="platform-header">
-          <div className="platform-breadcrumb"><span>Administration</span><i>/</i><strong>{activeSectionLabel}</strong></div>
+          <div className="platform-breadcrumb"><a className="platform-header-brand" href="#overview" aria-label="ScolaPro — accueil de l’administration"><img src="/scolapro-icon.svg" alt="" /></a><span>Administration</span><i>/</i><strong>{activeSectionLabel}</strong></div>
           <div className="platform-header-actions"><a className="platform-home-link" href="/">Espace école <span aria-hidden="true">↗</span></a><span className="platform-user-avatar" aria-hidden="true">{user.fullName.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toLocaleUpperCase('fr')}</span><span className="platform-user-name">{user.fullName}</span><button className="platform-logout" onClick={() => { clearPlatformToken(); setUser(null); setSchools([]); }}>Déconnexion</button></div>
         </header>
         <section className="platform-content">

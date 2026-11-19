@@ -3,14 +3,14 @@ import test from 'node:test';
 
 import { resolveApiBaseUrl } from './client.ts';
 
-test('uses the LAN IP when the browser is on the phone network', () => {
+test('uses the same-origin API proxy when the browser is on the local network', () => {
   const url = resolveApiBaseUrl({
     hostname: '10.0.18.247',
     protocol: 'http:',
     envUrl: 'http://localhost:3000/api/v1',
   });
 
-  assert.equal(url, 'http://10.0.18.247:3000/api/v1');
+  assert.equal(url, '/api/v1');
 });
 
 test('keeps the configured production API URL when it is not localhost', () => {

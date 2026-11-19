@@ -9,6 +9,7 @@ export type AuthSession = {
 export type CurrentTenant = {
   user: AuthSession['user'];
   school: AuthSession['school'];
+  platformAccess?: boolean;
 };
 
 export type TenantChoice = AuthSession['school'] & { role: UserRole };

@@ -167,6 +167,80 @@ test('denies school administration routes to non-admin school roles', async () =
   assert.equal(continued, false);
 });
 
+test('allows platform administrators to access only the school scoped in their temporary token', async () => {
+  const claims = { sub: 'platform-user', schoolId: 'school-a', role: 'ADMIN', tokenType: 'PLATFORM_SCHOOL_ACCESS' };
+  let context;
+  let continued = false;
+  const middleware = new TenantAuthMiddleware(
+    { verifyAsync: async () => claims },
+    {
+      validatePlatformSchoolAccess: async (userId, schoolId) => {
+        assert.equal(userId, claims.sub);
+        assert.equal(schoolId, claims.schoolId);
+        return { userId, schoolId, role: 'ADMIN' };
+      },
+    },
+    { run: (value, callback) => { context = value; return callback(); } },
+  );
+
+  await middleware.use(
+    { path: '/api/v1/students', method: 'GET', headers: { authorization: 'Bearer platform-school-token' } },
+    { status() { return this; }, json() { return this; } },
+    () => { continued = true; },
+  );
+
+  assert.deepEqual(context, { userId: claims.sub, schoolId: claims.schoolId, role: 'ADMIN' });
+  assert.equal(continued, true);
+});
+
+test('rejects temporary platform access after the school or platform admin is disabled', async () => {
+  let responseStatus;
+  let continued = false;
+  const middleware = new TenantAuthMiddleware(
+    { verifyAsync: async () => ({ sub: 'platform-user', schoolId: 'school-a', role: 'ADMIN', tokenType: 'PLATFORM_SCHOOL_ACCESS' }) },
+    { validatePlatformSchoolAccess: async () => null },
+    { run: (_context, callback) => callback() },
+  );
+
+  await middleware.use(
+    { path: '/api/v1/students', method: 'GET', headers: { authorization: 'Bearer platform-school-token' } },
+    { status(status) { responseStatus = status; return this; }, json() { return this; } },
+    () => { continued = true; },
+  );
+
+  assert.equal(responseStatus, 401);
+  assert.equal(continued, false);
+});
+
+test('issues an audited 30-minute access token scoped to one active school', async () => {
+  const { AuthService } = require('../dist/auth/auth.service.js');
+  const admin = { isActive: true, user: { id: 'platform-user', fullName: 'Platform Admin', email: 'admin@example.test', isActive: true } };
+  const school = { id: 'school-a', name: 'École A', slug: 'ecole-a', isActive: true };
+  let tokenClaims;
+  let tokenOptions;
+  let auditEntry;
+  const service = new AuthService(
+    {
+      platformAdmin: { findUnique: async () => admin },
+      school: { findUnique: async () => school },
+      platformAuditLog: { create: async ({ data }) => { auditEntry = data; } },
+    },
+    { signAsync: async (claims, options) => { tokenClaims = claims; tokenOptions = options; return 'temporary-token'; } },
+    {},
+    {},
+  );
+
+  const session = await service.startPlatformSchoolAccess(school.id, admin.user.id);
+
+  assert.equal(session.accessToken, 'temporary-token');
+  assert.deepEqual(tokenClaims, { sub: admin.user.id, schoolId: school.id, role: 'ADMIN', tokenType: 'PLATFORM_SCHOOL_ACCESS' });
+  assert.deepEqual(tokenOptions, { expiresIn: '30m' });
+  assert.equal(session.school.slug, school.slug);
+  assert.equal(auditEntry.action, 'PLATFORM_SCHOOL_ACCESS_STARTED');
+  assert.equal(auditEntry.entityId, school.id);
+  assert.equal(auditEntry.actorUserId, admin.user.id);
+});
+
 test('seeds default permissions only for the target school', async () => {
   const { AuthService } = require('../dist/auth/auth.service.js');
   let updateCalls = 0;

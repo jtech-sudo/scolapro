@@ -1,11 +1,11 @@
 import { Body, Controller, ForbiddenException, Get, Param, Patch, Post, Put, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
-import { BootstrapPlatformAdminDto, CreatePlatformSchoolDto, CreatePlatformSubscriptionPaymentDto, LoginDto, PlatformAdminLoginDto, RequestSchoolSubscriptionPlanDto, ResetPlatformSchoolAdminPasswordDto, ReviewSchoolSubscriptionPlanRequestDto, UpdatePlatformPlanDto, UpdatePlatformSchoolStatusDto, UpdateSchoolSubscriptionDto } from './auth.dto';
+import { BootstrapPlatformAdminDto, CreatePlatformSchoolDto, CreatePlatformSubscriptionPaymentDto, LoginDto, PlatformAdminLoginDto, RequestSchoolPasswordResetDto, RequestSchoolSubscriptionPlanDto, ResetPlatformSchoolAdminPasswordDto, ResetSchoolPasswordDto, ReviewSchoolSubscriptionPlanRequestDto, UpdatePlatformPlanDto, UpdatePlatformSchoolStatusDto, UpdateSchoolSubscriptionDto } from './auth.dto';
 import { Public } from './public.decorator';
 import { SaveRolePermissionsDto, UpdateSchoolProfileDto, UpdateUserRoleDto } from '../administration/administration.dto';
 
-type AuthenticatedRequest = Request & { auth?: { sub: string; schoolId: string; role: string } };
+type AuthenticatedRequest = Request & { auth?: { sub: string; schoolId?: string; role?: string; tokenType?: string } };
 
 @Controller('auth')
 export class AuthController {
@@ -17,23 +17,42 @@ export class AuthController {
     return this.auth.login(dto);
   }
 
+  @Public()
+  @Post('password-reset/request')
+  requestPasswordReset(@Body() dto: RequestSchoolPasswordResetDto) {
+    return this.auth.requestSchoolPasswordReset(dto);
+  }
+
+  @Public()
+  @Post('password-reset/confirm')
+  confirmPasswordReset(@Body() dto: ResetSchoolPasswordDto) {
+    return this.auth.resetSchoolPassword(dto);
+  }
+
   @Get('me')
   me(@Req() request: AuthenticatedRequest) {
     const claims = request.auth;
-    if (!claims) throw new Error('Authenticated request context is missing.');
-    return this.auth.getCurrentUser(claims.sub, claims.schoolId);
+    if (!claims?.schoolId) throw new Error('Authenticated request context is missing.');
+    return claims.tokenType === 'PLATFORM_SCHOOL_ACCESS'
+      ? this.auth.getCurrentPlatformSchool(claims.sub, claims.schoolId)
+      : this.auth.getCurrentUser(claims.sub, claims.schoolId);
   }
 
   @Get('permissions')
   permissions(@Req() request: AuthenticatedRequest) {
     const claims = request.auth;
-    if (!claims) throw new Error('Authenticated request context is missing.');
-    return this.auth.getCurrentRolePermissions(claims.sub, claims.schoolId);
+    if (!claims?.schoolId) throw new Error('Authenticated request context is missing.');
+    return claims.tokenType === 'PLATFORM_SCHOOL_ACCESS'
+      ? this.auth.getCurrentPlatformSchoolPermissions()
+      : this.auth.getCurrentRolePermissions(claims.sub, claims.schoolId);
   }
 
   @Get('schools')
   schools(@Req() request: AuthenticatedRequest) {
-    return this.auth.listMySchools(request.auth!.sub);
+    const claims = request.auth!;
+    return claims.tokenType === 'PLATFORM_SCHOOL_ACCESS'
+      ? this.auth.listCurrentPlatformSchool(claims.sub, claims.schoolId!)
+      : this.auth.listMySchools(claims.sub);
   }
 
   @Post('switch-school/:schoolId')
@@ -82,6 +101,11 @@ export class PlatformController {
 
   @Get('schools')
   schools() { return this.auth.listPlatformSchools(); }
+
+  @Post('schools/:schoolId/access')
+  accessSchool(@Param('schoolId') schoolId: string, @Req() request: AuthenticatedRequest) {
+    return this.auth.startPlatformSchoolAccess(schoolId, request.auth!.sub);
+  }
 
   @Post('schools')
   createSchool(@Body() dto: CreatePlatformSchoolDto, @Req() request: AuthenticatedRequest) {
